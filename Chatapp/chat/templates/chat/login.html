@@ -1,0 +1,33 @@
+{% extends 'chat/base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block header %}Login to Chat{% endblock %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 0 auto;">
+    <form method="post">
+        {% csrf_token %}
+        
+        {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                    <ul class="errorlist">
+                        {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        {% endfor %}
+        
+        <button type="submit" class="btn">Login</button>
+    </form>
+    
+    <p style="margin-top: 20px; text-align: center;">
+        Don't have an account? <a href="{% url 'register' %}" style="color: #667eea;">Register here</a>
+    </p>
+</div>
+{% endblock %}
