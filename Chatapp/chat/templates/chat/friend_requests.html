@@ -1,0 +1,122 @@
+{% extends 'chat/base.html' %}
+
+{% block title %}Friend Requests{% endblock %}
+
+{% block header %}Friend Requests{% endblock %}
+
+{% block content %}
+<div style="max-width: 1000px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="color: #333; margin: 0;">Friend Requests</h2>
+        <a href="{% url 'user_list' %}" style="padding: 10px 20px; background: #075e54; color: white; text-decoration: none; border-radius: 5px; font-weight: 500;">← Back to Users</a>
+    </div>
+    
+    <!-- Messages -->
+    {% if messages %}
+        <div style="margin-bottom: 20px;">
+            {% for message in messages %}
+                <div style="padding: 12px; border-radius: 5px; margin-bottom: 10px; {% if message.tags == 'error' %}background: #ffe6e6; color: #c0392b; border: 1px solid #e74c3c;{% elif message.tags == 'success' %}background: #e6f7e6; color: #27ae60; border: 1px solid #2ecc71;{% else %}background: #e3f2fd; color: #1976d2; border: 1px solid #2196f3;{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <!-- Received Requests -->
+    <div style="margin-bottom: 40px;">
+        <h3 style="color: #333; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #25d366;">📩 Received Requests</h3>
+        
+        {% if received_requests %}
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;">
+                {% for request in received_requests %}
+                    <div style="background: white; 
+                                padding: 20px; 
+                                border-radius: 10px; 
+                                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                                border-left: 4px solid #25d366;">
+                        <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                            <div style="width: 50px; height: 50px; border-radius: 50%; background: #075e54; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; margin-right: 12px;">
+                                {{ request.from_user.username.0|upper }}
+                            </div>
+                            <div>
+                                <h4 style="margin: 0; font-size: 16px; color: #333;">{{ request.from_user.username }}</h4>
+                                <p style="margin: 5px 0 0 0; font-size: 12px; color: #666;">{{ request.from_user.email }}</p>
+                                <p style="margin: 5px 0 0 0; font-size: 11px; color: #999;">{{ request.created_at|timesince }} ago</p>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 8px;">
+                            <form method="post" action="{% url 'accept_friend_request' request.id %}" style="flex: 1; margin: 0;">
+                                {% csrf_token %}
+                                <button type="submit" style="width: 100%; padding: 10px; background: #25d366; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 500;">
+                                    ✓ Accept
+                                </button>
+                            </form>
+                            <form method="post" action="{% url 'reject_friend_request' request.id %}" style="flex: 1; margin: 0;">
+                                {% csrf_token %}
+                                <button type="submit" style="width: 100%; padding: 10px; background: #757575; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                                    ✗ Reject
+                                </button>
+                            </form>
+                            <form method="post" action="{% url 'block_user' request.from_user.id %}" style="margin: 0;">
+                                {% csrf_token %}
+                                <button type="submit" 
+                                        onclick="return confirm('Block this user?')" 
+                                        style="padding: 10px 15px; background: #d32f2f; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                                    🚫
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 40px; background: #f5f5f5; border-radius: 10px;">
+                <p style="color: #666; font-size: 15px;">No pending friend requests</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Sent Requests -->
+    <div>
+        <h3 style="color: #333; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #1976d2;">📤 Sent Requests</h3>
+        
+        {% if sent_requests %}
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;">
+                {% for request in sent_requests %}
+                    <div style="background: white; 
+                                padding: 20px; 
+                                border-radius: 10px; 
+                                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                                border-left: 4px solid #1976d2;">
+                        <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                            <div style="width: 50px; height: 50px; border-radius: 50%; background: #1976d2; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; margin-right: 12px;">
+                                {{ request.to_user.username.0|upper }}
+                            </div>
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0; font-size: 16px; color: #333;">{{ request.to_user.username }}</h4>
+                                <p style="margin: 5px 0 0 0; font-size: 12px; color: #666;">{{ request.to_user.email }}</p>
+                                <p style="margin: 5px 0 0 0; font-size: 11px; color: #999;">Sent {{ request.created_at|timesince }} ago</p>
+                            </div>
+                            <div style="background: #e3f2fd; color: #1976d2; padding: 5px 10px; border-radius: 5px; font-size: 12px; font-weight: 500;">
+                                Pending
+                            </div>
+                        </div>
+                        
+                        <form method="post" action="{% url 'cancel_friend_request' request.to_user.id %}" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" style="width: 100%; padding: 10px; background: #757575; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                                Cancel Request
+                            </button>
+                        </form>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 40px; background: #f5f5f5; border-radius: 10px;">
+                <p style="color: #666; font-size: 15px;">No pending sent requests</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

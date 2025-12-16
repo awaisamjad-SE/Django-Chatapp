@@ -1,0 +1,744 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #111b21;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .dashboard-container {
+            display: flex;
+            height: 100vh;
+            max-width: 1600px;
+            margin: 0 auto;
+            background: #111b21;
+        }
+
+        /* Left Sidebar - Friends List */
+        .sidebar {
+            width: 400px;
+            background: #111b21;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #2a3942;
+        }
+
+        .sidebar-header {
+            background: #202c33;
+            padding: 10px 16px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #00a884;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .user-name {
+            color: #e9edef;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .header-icons {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .header-icon {
+            color: #aebac1;
+            cursor: pointer;
+            font-size: 20px;
+            transition: color 0.2s;
+        }
+
+        .header-icon:hover {
+            color: #e9edef;
+        }
+
+        .search-bar {
+            background: #202c33;
+            padding: 10px 12px;
+            border-bottom: 1px solid #2a3942;
+        }
+
+        .search-input {
+            width: 100%;
+            background: #111b21;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 32px 8px 60px;
+            color: #e9edef;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-wrapper {
+            position: relative;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aebac1;
+            font-size: 16px;
+        }
+
+        .tabs {
+            background: #202c33;
+            display: flex;
+            gap: 0;
+            padding: 0;
+            border-bottom: 1px solid #2a3942;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            color: #aebac1;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+            position: relative;
+        }
+
+        .tab:hover {
+            background: #2a3942;
+        }
+
+        .tab.active {
+            color: #00a884;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #00a884;
+        }
+
+        .friends-list {
+            flex: 1;
+            overflow-y: auto;
+            background: #111b21;
+        }
+
+        .friends-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .friends-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .friends-list::-webkit-scrollbar-thumb {
+            background: #374045;
+            border-radius: 3px;
+        }
+
+        .friend-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            gap: 12px;
+            cursor: pointer;
+            background: #111b21;
+            border-bottom: 1px solid #2a3942;
+            transition: background 0.2s;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .friend-item:hover {
+            background: #202c33;
+        }
+
+        .friend-item.active {
+            background: #2a3942;
+        }
+
+        .friend-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #00a884;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .friend-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .friend-name {
+            color: #e9edef;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+
+        .friend-message {
+            color: #8696a0;
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .friend-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .message-time {
+            color: #8696a0;
+            font-size: 12px;
+        }
+
+        .unread-badge {
+            background: #00a884;
+            color: #111b21;
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 12px;
+            font-weight: 600;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        /* Right Side - Chat Area */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #0b141a;
+        }
+
+        .welcome-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #222e35;
+            color: #e9edef;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .welcome-icon {
+            width: 250px;
+            height: 250px;
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+
+        .welcome-title {
+            font-size: 32px;
+            font-weight: 400;
+            margin-bottom: 20px;
+            color: #e9edef;
+        }
+
+        .welcome-subtitle {
+            font-size: 14px;
+            color: #8696a0;
+            line-height: 1.6;
+            max-width: 500px;
+        }
+
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #8696a0;
+            padding: 40px;
+        }
+
+        .empty-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .add-friend-btn {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: #00a884;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .add-friend-btn:hover {
+            background: #06cf9c;
+        }
+
+        /* Request Item */
+        .request-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            gap: 12px;
+            background: #111b21;
+            border-bottom: 1px solid #2a3942;
+        }
+
+        .request-info {
+            flex: 1;
+        }
+
+        .request-name {
+            color: #e9edef;
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .request-email {
+            color: #8696a0;
+            font-size: 13px;
+        }
+
+        .request-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-accept {
+            padding: 6px 16px;
+            background: #00a884;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .btn-accept:hover {
+            background: #06cf9c;
+        }
+
+        .btn-reject {
+            padding: 6px 16px;
+            background: #374045;
+            color: #e9edef;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .btn-reject:hover {
+            background: #475661;
+        }
+
+        /* Dropdown Menu */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: #233138;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+            min-width: 200px;
+            z-index: 1000;
+            display: none;
+            margin-top: 8px;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 12px 20px;
+            color: #e9edef;
+            text-decoration: none;
+            display: block;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background: #2a3942;
+        }
+
+        /* Modal for Add Friend */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #202c33;
+            border-radius: 8px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-header {
+            color: #e9edef;
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .modal-body input {
+            width: 100%;
+            padding: 12px;
+            background: #2a3942;
+            border: 1px solid #374045;
+            border-radius: 6px;
+            color: #e9edef;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .modal-body input:focus {
+            outline: none;
+            border-color: #00a884;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn-cancel {
+            padding: 10px 24px;
+            background: #374045;
+            color: #e9edef;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-submit {
+            padding: 10px 24px;
+            background: #00a884;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .btn-submit:hover {
+            background: #06cf9c;
+        }
+
+        /* Messages/Alerts */
+        .alert {
+            padding: 12px 16px;
+            margin: 12px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: #0b5940;
+            color: #d9fdd3;
+            border-left: 4px solid #00a884;
+        }
+
+        .alert-error {
+            background: #5e1717;
+            color: #ffb3b3;
+            border-left: 4px solid #d32f2f;
+        }
+
+        .alert-info {
+            background: #1b4a6b;
+            color: #b3d9ff;
+            border-left: 4px solid #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Left Sidebar -->
+        <div class="sidebar">
+            <!-- Header -->
+            <div class="sidebar-header">
+                <div class="user-info">
+                    <div class="user-avatar">{{ user.username.0|upper }}</div>
+                    <div class="user-name">{{ user.username }}</div>
+                </div>
+                <div class="header-icons">
+                    <div class="dropdown">
+                        <span class="header-icon" onclick="toggleDropdown()">⋮</span>
+                        <div class="dropdown-menu" id="dropdownMenu">
+                            <a href="{% url 'friends_list' %}" class="dropdown-item">My Friends</a>
+                            <a href="{% url 'blocked_users' %}" class="dropdown-item">Blocked Users</a>
+                            <a href="{% url 'logout' %}" class="dropdown-item">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-bar">
+                <div class="search-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-input" placeholder="Search or start new chat" id="searchInput" onkeyup="filterFriends()">
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('friends')" id="friendsTab">Chats</button>
+                <button class="tab" onclick="showTab('requests')" id="requestsTab">
+                    Requests
+                    {% if received_requests|length > 0 %}
+                        <span style="background: #00a884; color: white; border-radius: 10px; padding: 2px 6px; margin-left: 4px; font-size: 11px;">{{ received_requests|length }}</span>
+                    {% endif %}
+                </button>
+            </div>
+
+            <!-- Friends List -->
+            <div class="friends-list" id="friendsList">
+                {% if friends %}
+                    {% for friend_data in friends %}
+                        <a href="{% url 'dashboard' %}?chat={{ friend_data.user.id }}" class="friend-item {% if selected_friend and selected_friend.id == friend_data.user.id %}active{% endif %}" data-name="{{ friend_data.user.username|lower }}">
+                            <div class="friend-avatar">{{ friend_data.user.username.0|upper }}</div>
+                            <div class="friend-info">
+                                <div class="friend-name">{{ friend_data.user.username }}</div>
+                                <div class="friend-message">Click to start chatting</div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon">💬</div>
+                        <div class="empty-text">No friends yet</div>
+                        <button class="add-friend-btn" onclick="showAddFriendModal()">Add Friend</button>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Requests List (Hidden by default) -->
+            <div class="friends-list" id="requestsList" style="display: none;">
+                {% if received_requests %}
+                    {% for request in received_requests %}
+                        <div class="request-item">
+                            <div class="friend-avatar">{{ request.from_user.username.0|upper }}</div>
+                            <div class="request-info">
+                                <div class="request-name">{{ request.from_user.username }}</div>
+                                <div class="request-email">{{ request.from_user.email }}</div>
+                            </div>
+                            <div class="request-actions">
+                                <form method="post" action="{% url 'accept_friend_request' request.id %}" style="margin: 0;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-accept">Accept</button>
+                                </form>
+                                <form method="post" action="{% url 'reject_friend_request' request.id %}" style="margin: 0;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-reject">Reject</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon">📭</div>
+                        <div class="empty-text">No pending requests</div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right Side - Chat Area -->
+        <div class="chat-area">
+            {% if messages %}
+                <div style="position: absolute; top: 70px; left: 50%; transform: translateX(-50%); z-index: 1000; min-width: 300px;">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if selected_friend %}
+                <iframe src="{% url 'chat_room' selected_friend.id %}" style="width: 100%; height: 100%; border: none;"></iframe>
+            {% else %}
+                <div class="welcome-screen">
+                    <svg class="welcome-icon" viewBox="0 0 303 172" fill="none">
+                        <ellipse cx="151.5" cy="86" rx="151.5" ry="86" fill="#f0f2f5" fill-opacity="0.2"/>
+                        <path d="M96.1 66.4c-1.6-5.3-6.3-8.9-11.8-8.9-6.8 0-12.3 5.5-12.3 12.3 0 6.8 5.5 12.3 12.3 12.3 5.5 0 10.2-3.6 11.8-8.9h8.3c5.5 0 10-4.5 10-10s-4.5-10-10-10h-8.3zm-11.8-3.9c3.5 0 6.3 2.8 6.3 6.3 0 3.5-2.8 6.3-6.3 6.3-3.5 0-6.3-2.8-6.3-6.3 0-3.5 2.8-6.3 6.3-6.3zm72.5 8.9c1.6 5.3 6.3 8.9 11.8 8.9 6.8 0 12.3-5.5 12.3-12.3 0-6.8-5.5-12.3-12.3-12.3-5.5 0-10.2 3.6-11.8 8.9h-8.3c-5.5 0-10 4.5-10 10s4.5 10 10 10h8.3zm11.8 3.9c-3.5 0-6.3-2.8-6.3-6.3 0-3.5 2.8-6.3 6.3-6.3 3.5 0 6.3 2.8 6.3 6.3 0 3.5-2.8 6.3-6.3 6.3z" fill="#00a884"/>
+                    </svg>
+                    <h1 class="welcome-title">WhatsApp Web Clone</h1>
+                    <p class="welcome-subtitle">
+                        Send and receive messages with your friends.<br>
+                        Select a friend from the sidebar to start chatting.
+                    </p>
+                    <button class="add-friend-btn" onclick="showAddFriendModal()" style="margin-top: 30px;">Add New Friend</button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Add Friend Modal -->
+    <div class="modal" id="addFriendModal">
+        <div class="modal-content">
+            <div class="modal-header">Add Friend</div>
+            <form method="post" action="{% url 'send_friend_request' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <input type="text" name="identifier" placeholder="Enter username or email" required autofocus>
+                    <small style="color: #8696a0; font-size: 13px;">Enter the username or email address of the person you want to add</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="hideAddFriendModal()">Cancel</button>
+                    <button type="submit" class="btn-submit">Send Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleDropdown() {
+            const menu = document.getElementById('dropdownMenu');
+            menu.classList.toggle('show');
+        }
+
+        function showTab(tab) {
+            const friendsTab = document.getElementById('friendsTab');
+            const requestsTab = document.getElementById('requestsTab');
+            const friendsList = document.getElementById('friendsList');
+            const requestsList = document.getElementById('requestsList');
+
+            if (tab === 'friends') {
+                friendsTab.classList.add('active');
+                requestsTab.classList.remove('active');
+                friendsList.style.display = 'block';
+                requestsList.style.display = 'none';
+            } else {
+                friendsTab.classList.remove('active');
+                requestsTab.classList.add('active');
+                friendsList.style.display = 'none';
+                requestsList.style.display = 'block';
+            }
+        }
+
+        function filterFriends() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const friendItems = document.querySelectorAll('.friend-item');
+
+            friendItems.forEach(item => {
+                const name = item.getAttribute('data-name');
+                if (name.includes(filter)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function showAddFriendModal() {
+            document.getElementById('addFriendModal').classList.add('show');
+        }
+
+        function hideAddFriendModal() {
+            document.getElementById('addFriendModal').classList.remove('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.querySelector('.dropdown');
+            const menu = document.getElementById('dropdownMenu');
+            if (!dropdown.contains(event.target)) {
+                menu.classList.remove('show');
+            }
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('addFriendModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                hideAddFriendModal();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+{% extends 'chat/base.html' %}
+
+{% block title %}My Friends{% endblock %}
+
+{% block header %}My Friends{% endblock %}
+
+{% block content %}
+<div style="max-width: 1000px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="color: #333; margin: 0;">My Friends</h2>
+        <a href="{% url 'user_list' %}" style="padding: 10px 20px; background: #075e54; color: white; text-decoration: none; border-radius: 5px; font-weight: 500;">← Back to Users</a>
+    </div>
+    
+    <!-- Messages -->
+    {% if messages %}
+        <div style="margin-bottom: 20px;">
+            {% for message in messages %}
+                <div style="padding: 12px; border-radius: 5px; margin-bottom: 10px; {% if message.tags == 'error' %}background: #ffe6e6; color: #c0392b; border: 1px solid #e74c3c;{% elif message.tags == 'success' %}background: #e6f7e6; color: #27ae60; border: 1px solid #2ecc71;{% else %}background: #e3f2fd; color: #1976d2; border: 1px solid #2196f3;{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    {% if friends %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+            {% for friend_data in friends %}
+                <div style="background: white; 
+                            padding: 20px; 
+                            border-radius: 10px; 
+                            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                            transition: transform 0.2s, box-shadow 0.2s;">
+                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                        <div style="width: 60px; height: 60px; border-radius: 50%; background: #25d366; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 24px; margin-right: 15px;">
+                            {{ friend_data.user.username.0|upper }}
+                        </div>
+                        <div>
+                            <h3 style="margin: 0; font-size: 18px; color: #333;">{{ friend_data.user.username }}</h3>
+                            <p style="margin: 5px 0 0 0; font-size: 13px; color: #666;">{{ friend_data.user.email }}</p>
+                            <p style="margin: 5px 0 0 0; font-size: 12px; color: #999;">Friends since {{ friend_data.since|date:"M d, Y" }}</p>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 8px;">
+                        <a href="{% url 'chat_room' friend_data.user.id %}" 
+                           style="flex: 1; text-align: center; padding: 10px; background: #25d366; color: white; text-decoration: none; border-radius: 5px; font-weight: 500;">
+                            💬 Chat
+                        </a>
+                        <form method="post" action="{% url 'unfriend_user' friend_data.user.id %}" style="flex: 1; margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" 
+                                    onclick="return confirm('Are you sure you want to remove {{ friend_data.user.username }} from your friends?')" 
+                                    style="width: 100%; padding: 10px; background: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 500;">
+                                Remove
+                            </button>
+                        </form>
+                        <form method="post" action="{% url 'block_user' friend_data.user.id %}" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" 
+                                    onclick="return confirm('Block {{ friend_data.user.username }}? This will remove them from your friends.')" 
+                                    style="padding: 10px 15px; background: #d32f2f; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                                🚫
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <div style="font-size: 64px; margin-bottom: 20px;">👥</div>
+            <h3 style="color: #333; margin-bottom: 10px;">No Friends Yet</h3>
+            <p style="color: #666; margin-bottom: 20px;">Start adding friends to chat with them!</p>
+            <a href="{% url 'user_list' %}" style="display: inline-block; padding: 12px 30px; background: #25d366; color: white; text-decoration: none; border-radius: 5px; font-weight: 500;">Add Friends</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
